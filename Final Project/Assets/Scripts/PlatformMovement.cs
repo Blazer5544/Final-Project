@@ -7,6 +7,8 @@ public class PlatformMovement : MonoBehaviour
     private Rigidbody2D _rigidbody;
     private Animator _animator;
     private TrailRenderer _trailrenderer;
+    private Collider2D _collider;
+
     [SerializeField]
     private Transform groundCheck;
     [SerializeField]
@@ -22,6 +24,8 @@ public class PlatformMovement : MonoBehaviour
 
     [SerializeField] private float _dashingVelocity = 14f;
     [SerializeField] private float _dashingTime = 0.5f;
+    [SerializeField] private bool _active = true;
+
     private Vector2 _dashingDir;
     private bool _isDashing;
     private bool _canDash = true;
@@ -32,6 +36,7 @@ public class PlatformMovement : MonoBehaviour
         _rigidbody = GetComponent<Rigidbody2D>();
         _animator = GetComponent<Animator>();
         _trailrenderer = GetComponent<TrailRenderer>();
+        _collider = GetComponent<Collider2D>();
     }
 
     // Update is called once per frame
@@ -41,6 +46,12 @@ public class PlatformMovement : MonoBehaviour
         var jumpInput = Input.GetButtonDown("Jump");
         var jumpInputReleased = Input.GetButtonUp("Jump");
         var dashInput = Input.GetButtonDown("Dash");
+
+        
+        if (!_active)
+        {
+            return;
+        }
 
         if(dashInput && _canDash)
         {
@@ -97,5 +108,17 @@ public class PlatformMovement : MonoBehaviour
         yield return new WaitForSeconds(_dashingTime);
         _trailrenderer.emitting = false;
         _isDashing = false;
+    }
+
+    private void MiniJump()
+    {
+        _rigidbody.velocity = new Vector2(_rigidbody.velocity.x, jumpForce / 2);
+    }
+
+    private void Die()
+    {
+        _active = false;
+        _collider.enabled = false;
+        MiniJump();
     }
 }
