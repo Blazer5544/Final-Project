@@ -1181,6 +1181,8 @@ MonoBehaviour:
   collisionMask:
     serializedVersion: 2
     m_Bits: 64
+  _dashingVelocity: 14
+  _dashingTime: 0.5
 --- !u!212 &812769737
 SpriteRenderer:
   m_ObjectHideFlags: 0

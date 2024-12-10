@@ -24,14 +24,14 @@ public class PlatformMovement : MonoBehaviour
     [SerializeField] private float _dashingTime = 0.5f;
     private Vector2 _dashingDir;
     private bool _isDashing;
-    private bool _canDash;
+    private bool _canDash = true;
 
     // Start is called before the first frame update
     void Start()
     {
         _rigidbody = GetComponent<Rigidbody2D>();
         _animator = GetComponent<Animator>();
-        _trailrenderer = GetComponent<_trailrenderer>();
+        _trailrenderer = GetComponent<TrailRenderer>();
     }
 
     // Update is called once per frame
@@ -48,6 +48,22 @@ public class PlatformMovement : MonoBehaviour
             _canDash = false;
             _trailrenderer.emitting = true;
             _dashingDir = new Vector2(inputX, Input.GetAxisRaw("Vertical"));
+            if(_dashingDir == Vector2.zero)
+            {
+                _dashingDir = new Vector2(transform.localScale.x, 0);
+            }
+            StartCoroutine(StopDashing());
+        }
+
+        if (_isDashing)
+        {
+            _rigidbody.velocity = _dashingDir.normalized * _dashingVelocity;
+            return;
+        }
+
+        if (IsGrounded())
+        {
+            _canDash = true;
         }
 
         _rigidbody.velocity = new Vector2(inputX * speed, _rigidbody.velocity.y);
@@ -74,5 +90,12 @@ public class PlatformMovement : MonoBehaviour
     public bool IsGrounded()
     {
         return Physics2D.OverlapCircle(groundCheck.position, groundCheckRadius, collisionMask);
+    }
+
+    private IEnumerator StopDashing()
+    {
+        yield return new WaitForSeconds(_dashingTime);
+        _trailrenderer.emitting = false;
+        _isDashing = false;
     }
 }
