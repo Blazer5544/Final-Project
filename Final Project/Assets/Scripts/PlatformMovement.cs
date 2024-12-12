@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 public class PlatformMovement : MonoBehaviour
 {
@@ -8,6 +9,7 @@ public class PlatformMovement : MonoBehaviour
     private Animator _animator;
     private TrailRenderer _trailrenderer;
     private Collider2D _collider;
+    private Vector2 _respawnPoint;
 
     [SerializeField]
     private Transform groundCheck;
@@ -31,16 +33,17 @@ public class PlatformMovement : MonoBehaviour
     private bool _canDash = true;
 
     // Start is called before the first frame update
-    void Start()
+    private void Start()
     {
         _rigidbody = GetComponent<Rigidbody2D>();
         _animator = GetComponent<Animator>();
         _trailrenderer = GetComponent<TrailRenderer>();
         _collider = GetComponent<Collider2D>();
+        SetRespawnPoint(transform.position);
     }
 
     // Update is called once per frame
-    void Update()
+    private void Update()
     {
         var inputX = Input.GetAxisRaw("Horizontal");
         var jumpInput = Input.GetButtonDown("Jump");
@@ -115,10 +118,33 @@ public class PlatformMovement : MonoBehaviour
         _rigidbody.velocity = new Vector2(_rigidbody.velocity.x, jumpForce / 2);
     }
 
-    private void Die()
+    public void SetRespawnPoint(Vector2 position)
+    {
+        _respawnPoint = position;
+    }
+
+    public void Die()
     {
         _active = false;
         _collider.enabled = false;
         MiniJump();
+        StartCoroutine(Respawn());
+    }
+
+    private IEnumerator Respawn()
+    {
+        yield return new WaitForSeconds(1f);
+        transform.position = _respawnPoint;
+        _active = true;
+        _collider.enabled = true;
+        MiniJump();
+    }
+
+    private void OnCollisionEnter2D(Collision2D collision)
+    {
+        if (collision.gameObject.tag.Equals("Goal"))
+        {
+            SceneManager.LoadScene(1);
+        }
     }
 }
